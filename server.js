@@ -3,13 +3,18 @@ const { WebcastPushConnection } = tiktokConnector;
 const WebSocket = require('ws');
 
 const TIKTOK_USERNAME = process.env.TIKTOK_USER || 'respirando.a.f';
-const API_KEY = process.env.SIGN_API_KEY || process.env.TIKTOK_SIGN_API_KEY || '';
+const API_KEY = (process.env.SIGN_API_KEY || process.env.TIKTOK_SIGN_API_KEY || '').trim();
 const PORT = process.env.PORT || 8080;
 
+// Configura a chave do EulerStream em todas as propriedades possíveis da v1 e v2
 if (API_KEY) {
   process.env.TIKTOK_SIGN_API_KEY = API_KEY;
+  process.env.SIGN_API_KEY = API_KEY;
   if (tiktokConnector.SignConfig) {
     tiktokConnector.SignConfig.apiKey = API_KEY;
+  }
+  if (tiktokConnector.webSigner && tiktokConnector.webSigner.SignConfig) {
+    tiktokConnector.webSigner.SignConfig.apiKey = API_KEY;
   }
 }
 
@@ -49,13 +54,14 @@ function connectToTikTok() {
 
   const options = {
     processInitialData: false,
-    enableExtendedGiftInfo: true
+    enableExtendedGiftInfo: true,
+    signApiKey: API_KEY,
+    webClientParams: {
+      apiKey: API_KEY
+    }
   };
-  if (API_KEY) {
-    options.signApiKey = API_KEY;
-  }
 
-  // Cria uma instância NOVA a cada tentativa para nunca travar após erro
+  console.log(`🔑 Usando API Key: ${API_KEY ? API_KEY.substring(0, 10) + '...' : 'NENHUMA!'}`);
   const tiktokConnection = new WebcastPushConnection(TIKTOK_USERNAME, options);
 
   tiktokConnection.on('chat', (data) => {
