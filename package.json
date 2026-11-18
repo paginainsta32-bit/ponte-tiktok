@@ -6,7 +6,6 @@
     "start": "node server.js"
   },
   "dependencies": {
-    "tiktok-live-connector": "latest",
     "ws": "^8.16.0"
   }
 }
