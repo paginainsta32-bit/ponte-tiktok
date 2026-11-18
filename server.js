@@ -54,11 +54,11 @@ function connectEulerStream() {
       messages.forEach((msg) => {
         const type = msg.type || msg.event || '';
         const data = msg.data || msg;
+        const user = data.user || data;
 
         if (type.includes('Chat') || type === 'chat') {
-          const user = data.user || data;
           const cleanData = {
-            nickname: user.nickname || user.uniqueId || 'Aluno',
+            nickname: user.nickname || user.uniqueId || 'Seguidor',
             uniqueId: user.uniqueId || 'user',
             profilePictureUrl: user.profilePictureUrl || '',
             comment: data.comment || ''
@@ -67,19 +67,30 @@ function connectEulerStream() {
           broadcast({ event: 'chat', data: cleanData });
         }
 
-        if (type.includes('Gift') || type === 'gift') {
-          const user = data.user || data;
+        if (type.includes('Like') || type === 'like') {
           const cleanData = {
-            nickname: user.nickname || user.uniqueId || 'Aluno',
-            profilePictureUrl: user.profilePictureUrl || ''
+            nickname: user.nickname || user.uniqueId || 'Seguidor',
+            uniqueId: user.uniqueId || 'user',
+            profilePictureUrl: user.profilePictureUrl || '',
+            likeCount: data.likeCount || data.count || 1
           };
-          console.log(`🎁 PRESENTE de ${cleanData.nickname}`);
+          broadcast({ event: 'like', data: cleanData });
+        }
+
+        if (type.includes('Gift') || type === 'gift') {
+          const cleanData = {
+            nickname: user.nickname || user.uniqueId || 'Seguidor',
+            uniqueId: user.uniqueId || 'user',
+            profilePictureUrl: user.profilePictureUrl || '',
+            giftName: (data.giftDetails && data.giftDetails.giftName) || data.giftName || 'Presente',
+            diamondCount: (data.giftDetails && data.giftDetails.diamondCount) || data.diamondCount || 1,
+            repeatCount: data.repeatCount || 1
+          };
+          console.log(`🎁 PRESENTE de ${cleanData.nickname}: ${cleanData.giftName}`);
           broadcast({ event: 'gift', data: cleanData });
         }
       });
-    } catch (e) {
-      console.log('⚠️ Pacote recebido:', raw.toString().substring(0, 120));
-    }
+    } catch (e) {}
   });
 
   eulerWs.on('close', (code, reason) => {
