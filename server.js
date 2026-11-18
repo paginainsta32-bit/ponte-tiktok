@@ -1,9 +1,5 @@
-const { WebcastPushConnection, SignConfig } = require('tiktok-live-connector');
+const { WebcastPushConnection } = require('tiktok-live-connector');
 const WebSocket = require('ws');
-
-if (process.env.SIGN_API_KEY) {
-  SignConfig.apiKey = process.env.SIGN_API_KEY;
-}
 
 const TIKTOK_USERNAME = process.env.TIKTOK_USER || 'respirando.a.f';
 const PORT = process.env.PORT || 8080;
@@ -33,7 +29,12 @@ function broadcast(payload) {
   });
 }
 
-let tiktokConnection = new WebcastPushConnection(TIKTOK_USERNAME);
+const connectionOptions = {};
+if (process.env.SIGN_API_KEY) {
+  connectionOptions.signApiKey = process.env.SIGN_API_KEY;
+}
+
+let tiktokConnection = new WebcastPushConnection(TIKTOK_USERNAME, connectionOptions);
 
 function connectToTikTok() {
   tiktokConnection.connect().then((state) => {
